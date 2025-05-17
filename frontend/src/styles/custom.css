@@ -1,0 +1,44 @@
+/* 减小菜单项中图标和文字的间距 */
+.compact-menu .ant-menu-item .ant-menu-item-icon + span {
+  margin-left: 6px !important;
+}
+
+/* 减小下拉选择器中图标和文字的间距 */
+.ant-select-selection-item {
+  padding-right: 12px !important;
+}
+
+/* SZTU用户昵称聚焦状态 */
+.sztu-username {
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.sztu-username:hover {
+  text-decoration: underline;
+  color: #e6f7ff;
+}
+
+/* 论文项聚焦状态 */
+.paper-item {
+  position: relative;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.paper-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #1890ff;
+}
+
+.paper-item:hover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-color: #1890ff;
+  border-radius: 2px 0 0 2px;
+}
