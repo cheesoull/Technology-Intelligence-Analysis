@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Paper } from '../types/paper';
 import { getPaperById, getPaperList } from '../services/paperService';
-// 直接从paperService导入这些函数，确保它们被正确实现和导出
-import { getCitationChain, getPaperAIAnalysis, getPaperPdfUrl } from '../services/paperService';
+import { getCitationChain, getPaperAIAnalysis } from '../services/paperService';
 import { Card, Typography, List, Tag, Button, Spin, message, Tabs, Divider, Row, Col, Upload, Slider } from 'antd';
 import { ArrowLeftOutlined, FileTextOutlined, LinkOutlined, BulbOutlined, UploadOutlined, ReloadOutlined } from '@ant-design/icons';
 import { PDFViewer } from '../components/PDFViewer';
@@ -21,31 +20,24 @@ interface AIAnalysisResult {
 }
 
 const PaperDetail: React.FC = () => {
-  // 修改参数名以匹配App.tsx中的路由配置 '/paper/:paperId'
   const { paperId } = useParams<{ paperId: string }>();
-  // 为了兼容现有代码，将paperId赋值给id变量
   const id = paperId;
   const navigate = useNavigate();
   const [paper, setPaper] = useState<Paper | null>(null);
   const [loading, setLoading] = useState(true);
   const [pdfLoading, setPdfLoading] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string>('');
+  const [pdfUrl] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState('1');
-  
-  // 引用链相关状态
   const [citationChain, setCitationChain] = useState<{references: Paper[], citations: Paper[]} | null>(null);
-  const [citationLoading, setCitationLoading] = useState(false);
+  const [, setCitationLoading] = useState(false);
   const [citationDepth, setCitationDepth] = useState(2);
-  
-  // AI分析相关状态
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
   const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
   const [recommendedPapers, setRecommendedPapers] = useState<Paper[]>([]);
   const [comparisonPaper, setComparisonPaper] = useState<Paper | null>(null);
-  const [comparisonMode, setComparisonMode] = useState<'recommended' | 'upload'>('recommended');
+  const [, setComparisonMode] = useState<'recommended' | 'upload'>('recommended');
 
-  // 获取论文详情
   useEffect(() => {
     const fetchPaper = async () => {
       try {
@@ -55,14 +47,10 @@ const PaperDetail: React.FC = () => {
           return;
         }
         setLoading(true);
-        console.log('正在获取论文详情，ID:', id);
         
-        // 检查是否是本地论文
         const isLocalPaper = id.startsWith('local_');
         
         if (isLocalPaper) {
-          console.log('检测到本地论文ID:', id);
-          // 对于本地论文，直接使用模拟数据
           const localMockPaper: Paper = {
             paper_id: id,
             title: id.includes('1683456789') 
@@ -102,31 +90,22 @@ const PaperDetail: React.FC = () => {
                 ? new Date('2024-01-15')
                 : new Date('2023-11-20')
           };
-          
-          console.log('使用本地论文模拟数据:', localMockPaper);
+        
           setPaper(localMockPaper);
           setPdfLoading(false);
           return;
         }
         
-        // 对于非本地论文，使用真实ID获取数据，仅在ID为空时使用模拟数据
         const paperIdToUse = id && id.trim().length > 0 ? id : `mock${Math.floor(Math.random() * 2) + 1}`;
         
         try {
           const data = await getPaperById(paperIdToUse);
-          console.log('获取到论文详情:', data);
           setPaper(data);
-          
-          // 暂时跳过PDF获取
           setPdfLoading(false);
-          console.log('暂时跳过PDF获取，专注于论文详情展示');
         } catch (fetchError) {
           console.error('获取论文详情API调用失败:', fetchError);
-          // 尝试多次获取真实数据
           if (!paperIdToUse.startsWith('mock')) {
             try {
-              // 再尝试一次获取真实数据
-              console.log('重新尝试获取论文数据:', paperIdToUse);
               const retryData = await getPaperById(paperIdToUse);
               if (retryData) {
                 setPaper(retryData);
@@ -154,24 +133,19 @@ const PaperDetail: React.FC = () => {
     fetchPaper();
   }, [id, navigate]);
 
-  // 获取引用链数据
   useEffect(() => {
     const fetchCitationChain = async () => {
       if (activeTab === '2' && paper && !citationChain) {
         try {
           setCitationLoading(true);
-          console.log('正在获取引用链数据，paperId:', paper.paper_id);
           
           try {
             const data = await getCitationChain(paper.paper_id, citationDepth);
-            console.log('获取到引用链数据:', data);
             setCitationChain(data);
           } catch (fetchError) {
             console.error('获取引用链API调用失败:', fetchError);
-            // 如果获取失败，使用模拟数据
             message.warning('使用模拟引用链数据');
             
-            // 模拟引用链数据
             const mockReferences = [
               {
                 paper_id: 'ref1',
@@ -216,7 +190,6 @@ const PaperDetail: React.FC = () => {
         } catch (error) {
           message.error('获取引用链失败');
           console.error('获取引用链失败:', error);
-          // 设置空的引用链数据，避免界面崩溃
           setCitationChain({ references: [], citations: [] });
         } finally {
           setCitationLoading(false);
@@ -227,24 +200,18 @@ const PaperDetail: React.FC = () => {
     fetchCitationChain();
   }, [activeTab, paper, citationChain, citationDepth]);
 
-  // 获取AI分析数据
   useEffect(() => {
     const fetchAIAnalysis = async () => {
       if (activeTab === '3' && paper && !aiAnalysis) {
         try {
           setAiAnalysisLoading(true);
-          console.log('正在获取AI分析数据，paperId:', paper.paper_id);
           
           try {
             const data = await getPaperAIAnalysis(paper.paper_id);
-            console.log('获取到AI分析数据:', data);
             setAiAnalysis(data);
           } catch (fetchError) {
             console.error('获取AI分析API调用失败:', fetchError);
-            // 如果获取失败，使用模拟数据
             message.warning('使用模拟AI分析数据');
-            
-            // 模拟AI分析数据
             setAiAnalysis({
               summary: `本文研究了${paper.keywords?.join('、')}等领域的关键问题，提出了创新性的解决方案。作者${paper.authors?.join('、')}通过实验证明了该方法的有效性。`,
               keyPoints: [
@@ -256,26 +223,18 @@ const PaperDetail: React.FC = () => {
               relatedFields: paper.keywords || ['人工智能', '机器学习']
             });
           }
-          
-          // 获取基于当前论文关键词的推荐论文
           if (paper.keywords && paper.keywords.length > 0) {
             try {
-              console.log('正在获取推荐论文，关键词:', paper.keywords);
               const result = await getPaperList(0, 5, paper.keywords);
-              console.log('获取到推荐论文:', result);
               
-              // 处理不同的响应格式
               let papersList: Paper[] = [];
               
               if ('papers' in result && Array.isArray(result.papers)) {
                 papersList = result.papers;
-                console.log('解析到papers格式的推荐论文:', papersList.length);
               } else if ('data' in result && Array.isArray(result.data)) {
                 papersList = result.data;
-                console.log('解析到data格式的推荐论文:', papersList.length);
               } else {
-                console.warn('推荐论文数据格式不符合预期:', result);
-                // 使用模拟数据
+
                 papersList = [
                   {
                     paper_id: 'rec1',
@@ -310,19 +269,15 @@ const PaperDetail: React.FC = () => {
                 ];
               }
               
-              // 过滤掉当前论文
               const filteredPapers = papersList.filter(p => p.paper_id !== paper.paper_id);
-              console.log('过滤后的推荐论文数量:', filteredPapers.length);
               setRecommendedPapers(filteredPapers);
               
-              // 默认选择第一篇推荐论文进行比较
               if (filteredPapers.length > 0 && !comparisonPaper) {
-                console.log('选择第一篇推荐论文进行比较:', filteredPapers[0].title);
                 setComparisonPaper(filteredPapers[0]);
               }
             } catch (listError) {
               console.error('获取推荐论文失败:', listError);
-              // 使用模拟数据
+
               const mockRecommendedPapers = [
                 {
                   paper_id: 'rec1',
@@ -553,7 +508,6 @@ ${aiAnalysis.relatedFields.map(field => `- ${field}`).join('\n')}
             ) : paper.url ? (
               <PDFViewer 
                 url={paper.url.startsWith('file://') ? 
-                  // 对于本地文件URL，需要先解码中文文件名
                   `file://${decodeURIComponent(paper.url.substring(7))}` : 
                   paper.url} 
                 currentPage={currentPage} 

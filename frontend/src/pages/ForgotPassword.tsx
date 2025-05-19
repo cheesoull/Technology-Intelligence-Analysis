@@ -47,7 +47,6 @@ const ForgotPassword: React.FC = () => {
       
       if (data.code === 200) {
         message.success('验证码已发送');
-        // 开始倒计时
         setCountdown(60);
         const timer = setInterval(() => {
           setCountdown((prev) => {
@@ -127,7 +126,6 @@ const ForgotPassword: React.FC = () => {
       
       if (data.code === 200) {
         message.success('密码重置成功');
-        // 跳转到登录页
         navigate('/login');
       } else {
         message.error(data.message || '密码重置失败');

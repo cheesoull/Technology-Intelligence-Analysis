@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Input, Button, Divider, Modal, message, Typography, Avatar, Upload, Radio } from 'antd';
-import { SendOutlined, PlusOutlined, DeleteOutlined, ExportOutlined, MenuFoldOutlined, MenuUnfoldOutlined, UploadOutlined, PaperClipOutlined } from '@ant-design/icons';
+import { SendOutlined, PlusOutlined, ExportOutlined, MenuFoldOutlined, MenuUnfoldOutlined, UploadOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import ReactMarkdown from 'react-markdown';
@@ -34,43 +34,33 @@ interface ChatSession {
 }
 
 const api = {
-  // 获取聊天历史 
   getChatHistory: async () => {
     try {
-      // 从本地存储获取聊天历史
       const savedSessions = localStorage.getItem('chatSessions');
       if (savedSessions) {
         const sessions = JSON.parse(savedSessions);
-        console.log('从本地存储加载聊天历史:', sessions.length, '个会话');
         return sessions;
       }
-      console.log('本地存储中没有聊天历史，创建新会话');
       return [];
     } catch (error) {
-      console.error('获取聊天历史失败:', error);
       return [];
     }
   },
 
-  // 发送聊天消息
   sendMessage: async (message: string, paperOrBlogId?: string, type?: 'paper' | 'blog') => {
     try {
       if (paperOrBlogId && type) {
-        // 使用论文/博客上下文的对话
         const response = await API.chat.ask(type, paperOrBlogId, message);
         return response;
       } else {
-        // 纯文本对话
         const response = await API.chat.generate(message);
         return response;
       }
     } catch (error) {
-      console.error('发送消息失败:', error);
       throw error;
     }
   },
 
-  // 上传文件
   uploadFile: async (file: File, type: 'paper' | 'blog') => {
     try {
       const formData = new FormData();
@@ -82,13 +72,11 @@ const api = {
         return await API.blogs.upload(formData);
       }
     } catch (error) {
-      console.error('上传文件失败:', error);
       throw error;
     }
   }
 };
 
-// API响应处理
 async function fetchChatResponse(prompt: string, sourceId?: string, sourceType?: 'paper' | 'blog') {
   try {
     const response = await api.sendMessage(prompt, sourceId, sourceType);
@@ -102,7 +90,6 @@ async function fetchChatResponse(prompt: string, sourceId?: string, sourceType?:
       return JSON.stringify(response);
     }
   } catch (error) {
-    console.error('获取聊天响应失败:', error);
     return '抱歉，获取响应失败，请稍后再试。';
   }
 }
@@ -130,7 +117,6 @@ const AIChat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const reportRef = useRef<HTMLDivElement>(null);
   
-  // 修改初始化聊天会话
   useEffect(() => {
     const initializeChat = async () => {
       try {
@@ -150,7 +136,6 @@ const AIChat: React.FC = () => {
           setCurrentSession(initialSession);
         }
       } catch (error) {
-        console.error('初始化聊天失败:', error);
         message.error('加载聊天历史失败');
       }
     };
@@ -158,29 +143,22 @@ const AIChat: React.FC = () => {
     initializeChat();
   }, []);
   
-  // 保存会话到本地存储
   useEffect(() => {
     if (chatSessions.length > 0) {
       localStorage.setItem('chatSessions', JSON.stringify(chatSessions));
     }
   }, [chatSessions]);
   
-  // 自动滚动到最新消息
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingResponse]);
   
-  // 检查是否有从论文页面选择的论文
   useEffect(() => {
-    // 检查是否有选中的论文或博客
     const selectedPaperId = localStorage.getItem('selectedPaperForAIChat');
     const selectedPaperTitle = localStorage.getItem('selectedPaperTitleForAIChat');
     const selectedContentType = localStorage.getItem('selectedContentTypeForAIChat') as 'paper' | 'blog' | null;
     
     if (selectedPaperId && selectedPaperTitle && selectedContentType) {
-      console.log('检测到选中的内容:', { selectedPaperId, selectedPaperTitle, selectedContentType });
-      
-      // 更新当前会话的论文或博客信息
       if (currentSession) {
         const updatedSession = {
           ...currentSession,
@@ -331,7 +309,6 @@ const AIChat: React.FC = () => {
         localStorage.setItem('chatSessions', JSON.stringify(updatedSessions));
       }
     } catch (error) {
-      console.error('发送消息失败:', error);
       message.error('发送消息失败，请重试');
     } finally {
       setIsLoading(false);
@@ -381,7 +358,6 @@ const AIChat: React.FC = () => {
         setSelectedPaperOrBlog(result.data._id);
       }
     } catch (error) {
-      console.error('上传文件失败:', error);
       message.error('上传文件失败，请重试');
     } finally {
       setUploadLoading(false);
@@ -429,7 +405,6 @@ const AIChat: React.FC = () => {
       pdf.save(`对话报告_${currentSession?.title || '未命名'}.pdf`);
       message.success('报告已成功导出为PDF');
     } catch (error) {
-      console.error('导出PDF失败:', error);
       message.error('导出PDF失败，请重试');
     } finally {
       setIsExporting(false);
@@ -711,8 +686,8 @@ const AIChat: React.FC = () => {
               paddingBottom: '20px',
               display: 'flex',
               justifyContent: 'center',
-              alignItems: 'flex-start', // 改为顶部对齐，解决滚动限制问题
-              paddingTop: '20px', // 减少顶部内边距
+              alignItems: 'flex-start',
+              paddingTop: '20px', 
             }}
           >
             <div
@@ -856,7 +831,7 @@ const AIChat: React.FC = () => {
                   paddingRight: 40,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                   height: 50,
-                  border: 'none', // 去掉边框
+                  border: 'none',
                 }}
                 suffix={
                   <SendOutlined

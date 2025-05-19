@@ -13,18 +13,14 @@ const Library: React.FC = () => {
   const [uploadLoading, setUploadLoading] = useState(false);
   const [localPapers, setLocalPapers] = useState<Paper[]>([]);
 
-  // 获取本地论文列表
   const fetchLocalPapers = async () => {
     setLoading(true);
     try {
-      // 尝试从后端获取数据
       try {
-        console.log('开始获取本地论文列表...');
         const response = await fetch('/api/papers/local');
         
         if (response.ok) {
           const result = await response.json();
-          console.log('获取本地论文列表响应:', result);
           
           if (result.code === 200 && result.data) {
             setLocalPapers(result.data);
@@ -32,13 +28,13 @@ const Library: React.FC = () => {
           }
         }
         
-        // 如果响应不成功或数据不符合预期，使用模拟数据
+        // 模拟数据
         console.warn('从后端获取本地论文列表失败，使用模拟数据');
         throw new Error('使用模拟数据');
       } catch (error) {
         console.log('使用模拟数据替代本地论文列表');
         
-        // 使用模拟数据
+        // 模拟数据
         const mockPapers: Paper[] = [
           {
             paper_id: 'local_1683456789',
@@ -101,14 +97,12 @@ const Library: React.FC = () => {
     fetchLocalPapers();
   }, []);
 
-  // 处理论文上传
   const handleFileUpload = async (file: File) => {
     try {
       setUploadLoading(true);
       await uploadPaper(file);
       message.success('论文上传成功');
       
-      // 刷新论文列表
       fetchLocalPapers();
     } catch (error) {
       message.error(`论文上传失败: ${error instanceof Error ? error.message : '未知错误'}`);
@@ -117,7 +111,6 @@ const Library: React.FC = () => {
     }
   };
 
-  // 上传文件前的验证
   const beforeUpload = (file: File) => {
     const isPDF = file.type === 'application/pdf';
     if (!isPDF) {
@@ -131,17 +124,14 @@ const Library: React.FC = () => {
       return false;
     }
 
-    // 手动处理上传
     handleFileUpload(file);
     return false;
   };
 
-  // 查看论文详情
   const handleViewPaper = (paperId: string) => {
     navigate(`/paper/${paperId}`);
   };
 
-  // 删除论文
   const handleDeletePaper = async (paperId: string) => {
     try {
       const response = await fetch(`/api/papers/${paperId}`, {
@@ -153,15 +143,12 @@ const Library: React.FC = () => {
       }
       
       message.success('论文删除成功');
-      // 刷新论文列表
       fetchLocalPapers();
     } catch (error) {
-      console.error('删除论文失败:', error);
       message.error('删除论文失败，请稍后重试');
     }
   };
 
-  // 表格列定义
   const columns = [
     {
       title: '标题',

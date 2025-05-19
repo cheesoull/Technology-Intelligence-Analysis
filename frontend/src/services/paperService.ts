@@ -50,7 +50,7 @@ export const uploadPaper = async (file: File): Promise<Paper> => {
     }
     
     const result = await response.json();
-    console.log('上传论文成功:', result);
+
     
     // 处理新的响应格式，状态码为200
     if (result.code === 200 && result.data) {
@@ -88,12 +88,12 @@ export const getPaperDetails = async (paperIds: string[]): Promise<Paper[]> => {
   // 尝试从缓存中获取
   const cachedData = getCache<Paper[]>(cacheKey);
   if (cachedData) {
-    console.log('从缓存中获取论文详细信息:', cachedData.length);
+
     return cachedData;
   }
 
   try {
-    console.log('获取论文详细信息:', paperIds);
+
     
     // 使用AMiner API获取论文详细信息
     const response = await fetch(AMINER_API.PAPER_INFO, {
@@ -111,7 +111,7 @@ export const getPaperDetails = async (paperIds: string[]): Promise<Paper[]> => {
     }
     
     const result = await response.json();
-    console.log('获取论文详细信息结果:', result);
+
     
     // 处理API返回的数据
     let papers: Paper[] = [];
@@ -170,13 +170,13 @@ export const getPaperById = async (id: string): Promise<Paper> => {
   // 尝试从缓存中获取
   const cachedPaper = getCache<Paper>(cacheKey);
   if (cachedPaper) {
-    console.log('从缓存中获取论文详情:', id);
+
     return cachedPaper;
   }
   
   // 如果是模拟数据请求，返回模拟数据
   if (id.startsWith('mock')) {
-    console.log('返回模拟论文数据:', id);
+
     const mockPaper: Paper = {
       paper_id: id,
       title: id === 'mock1' ? '基于深度学习的图像识别研究' : '自然语言处理中的注意力机制研究',
@@ -201,16 +201,16 @@ export const getPaperById = async (id: string): Promise<Paper> => {
   }
   
   try {
-    console.log('从 API 获取论文详情:', id);
+
     
     // 首先尝试使用后端API获取论文详情（符合接口文档）
     try {
-      console.log('尝试使用后端API获取论文详情:', id);
+
       const response = await fetch(`/api/papers/${id}`);
       
       if (response.ok) {
         const result = await response.json();
-        console.log('后端API返回的论文数据:', result);
+
         
         // 处理不同的响应格式
         if (result.code === 200 && result.data) {
@@ -236,7 +236,7 @@ export const getPaperById = async (id: string): Promise<Paper> => {
     
     // 处理本地上传的论文（ID以local_开头）
     if (id.startsWith('local_')) {
-      console.log('检测到本地论文ID，从后端获取详情:', id);
+
       const response = await fetch(`/api/papers/${id}`);
       
       if (!response.ok) {
@@ -244,7 +244,7 @@ export const getPaperById = async (id: string): Promise<Paper> => {
       }
       
       const result = await response.json();
-      console.log('获取到本地论文数据:', result);
+
       
       if (result.code === 200 && result.data) {
         // 使用data字段中的论文数据
@@ -277,7 +277,7 @@ export const getPaperById = async (id: string): Promise<Paper> => {
       
       if (response.ok) {
         const data = await response.json();
-        console.log('使用PAPER_DETAIL API获取到的论文详情数据:', data);
+
         
         if (data && data.data) {
           const paperData = data.data;
@@ -301,10 +301,10 @@ export const getPaperById = async (id: string): Promise<Paper> => {
           }
           
           // 提取关键字段的详细日志
-          console.log('论文关键词数据:', paperData.keywords);
-          console.log('论文分类数据:', paperData.venue);
-          console.log('论文引用数据:', paperData.n_citation);
-          console.log('论文参考文献数据:', paperData.n_reference);
+
+
+
+
           
           // 处理分类信息
           let category = '未分类';
@@ -351,19 +351,19 @@ export const getPaperById = async (id: string): Promise<Paper> => {
     
     // 如果详情API失败，尝试使用批量获取API
     try {
-      console.log('尝试使用批量获取API获取论文详情:', id);
+
       const detailedPapers = await getPaperDetails([id]);
       
       if (detailedPapers && detailedPapers.length > 0) {
         const paper = detailedPapers[0];
-        console.log('使用批量获取API成功获取论文详情:', paper);
+
         
         // 缓存数据
         setCache(cacheKey, paper);
         
         return paper;
       } else {
-        console.log('批量获取API返回的数据为空，使用增强版模拟数据');
+
         // 使用增强版模拟数据
         const pseudoRandom = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 5;
         const mockPapers = [
@@ -438,7 +438,7 @@ export const getPaperById = async (id: string): Promise<Paper> => {
       console.warn('使用批量获取API获取论文详情失败:', batchError);
       
       // 如果批量获取API也失败，使用增强版模拟数据
-      console.log('使用增强版模拟数据作为备选');
+
       const pseudoRandom = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 5;
       const mockPapers = [
         {
@@ -524,12 +524,12 @@ export const getPaperList = async (page: number = 0, size: number = 10, keywords
     const cachedData = getCache<{ papers: Paper[]; total: number }>(cacheKey);
     
     if (cachedData) {
-      console.log('使用缓存的论文列表数据:', { page, size, keywords });
+
       return cachedData;
     }
     
     // 缓存不存在或已过期，从API获取
-    console.log('从API获取论文列表:', { page, size, keywords });
+
     
     try {
       // 使用AMiner论文搜索API
@@ -636,7 +636,7 @@ export const getPaperList = async (page: number = 0, size: number = 10, keywords
             }
             
             // 并行获取每个批次的论文详情
-            console.log('开始使用 paper/info API 批量获取论文详情:', batches);
+
             const batchResults = await Promise.all(batches.map(async (batchIds) => {
               try {
                 // 使用 paper/info API 获取详细信息，包括作者数据
@@ -655,7 +655,7 @@ export const getPaperList = async (page: number = 0, size: number = 10, keywords
                 }
                 
                 const batchData = await batchResponse.json();
-                console.log('批量获取论文信息成功:', batchData);
+
                 
                 // 检查不同的返回格式
                 if (batchData.data && Array.isArray(batchData.data)) {
@@ -685,7 +685,7 @@ export const getPaperList = async (page: number = 0, size: number = 10, keywords
                 // 根据返回的数据结构使用正确的ID字段
                 const paperId = paper._id || paper.id;
                 if (paperId) {
-                  console.log('添加论文到映射:', paperId, paper);
+
                   paperDetailsMap.set(paperId, paper);
                 }
               });
@@ -695,7 +695,7 @@ export const getPaperList = async (page: number = 0, size: number = 10, keywords
                 // 尝试通过论文ID匹配详细信息
                 const detailedPaper = paperDetailsMap.get(paper.paper_id);
                 if (detailedPaper) {
-                  console.log('找到论文详细信息:', detailedPaper);
+
                   
                   // 更新作者信息
                   if (detailedPaper.authors && Array.isArray(detailedPaper.authors)) {
@@ -707,7 +707,7 @@ export const getPaperList = async (page: number = 0, size: number = 10, keywords
                     
                     if (authorNames.length > 0) {
                       papers[index].authors = authorNames;
-                      console.log('更新论文作者信息:', authorNames);
+
                     }
                   }
                   
@@ -811,12 +811,12 @@ export const getCitationChain = async (paperId: string, depth: number = 2): Prom
     const cachedData = getCache<{ references: Paper[]; citations: Paper[] }>(cacheKey);
     
     if (cachedData) {
-      console.log('使用缓存的引用链数据:', paperId);
+
       return cachedData;
     }
     
     // 缓存不存在或已过期，从API获取
-    console.log('从API获取引用链:', paperId);
+
     
     try {
       // 使用AMiner论文引用关系API
@@ -831,12 +831,12 @@ export const getCitationChain = async (paperId: string, depth: number = 2): Prom
       }
       
       const data = await response.json();
-      console.log('引用链API返回数据:', data);
+
       
       if ((data.code === 0 || data.code === 200) && data.data) {
         // 处理引用数据
         const citedPapers = data.data.cited || [];
-        console.log('引用论文数据:', citedPapers);
+
         
         // 获取引用的论文详情
         const references: Paper[] = [];
@@ -878,7 +878,7 @@ export const getCitationChain = async (paperId: string, depth: number = 2): Prom
  * 获取模拟引用链数据
  */
 const getMockCitationChain = (paperId: string): { references: Paper[]; citations: Paper[] } => {
-  console.log('生成模拟引用链数据:', paperId);
+
   
   // 生成模拟引用论文
   const references = getMockReferences(paperId, 5);
@@ -893,7 +893,7 @@ const getMockCitationChain = (paperId: string): { references: Paper[]; citations
  * 获取模拟引用论文
  */
 const getMockReferences = (paperId: string, count: number): Paper[] => {
-  console.log('生成模拟引用论文:', paperId, count);
+
   
   const references: Paper[] = [];
   for (let i = 0; i < count; i++) {
@@ -923,7 +923,7 @@ const getMockReferences = (paperId: string, count: number): Paper[] => {
  * 获取模拟被引用论文
  */
 const getMockCitations = (paperId: string, count: number): Paper[] => {
-  console.log('生成模拟被引用论文:', paperId, count);
+
   
   const citations: Paper[] = [];
   for (let i = 0; i < count; i++) {
@@ -959,12 +959,12 @@ export const getPaperPdfUrl = async (paperId: string): Promise<string> => {
     const cachedData = getCache<string>(cacheKey);
     
     if (cachedData) {
-      console.log('使用缓存的PDF URL:', paperId);
+
       return cachedData;
     }
     
     // 缓存不存在或已过期，从API获取
-    console.log('从API获取PDF URL:', paperId);
+
     
     try {
       // 使用AMiner API获取PDF URL
@@ -1008,12 +1008,12 @@ export const getPaperAIAnalysis = async (paperId: string): Promise<AIAnalysisRes
     const cachedData = getCache<AIAnalysisResult>(cacheKey);
     
     if (cachedData) {
-      console.log('使用缓存的AI分析数据:', paperId);
+
       return cachedData;
     }
     
     // 缓存不存在或已过期，模拟AI分析
-    console.log('生成论文AI分析:', paperId);
+
     
     // 获取论文详情，用于生成分析
     const paper = await getPaperById(paperId);

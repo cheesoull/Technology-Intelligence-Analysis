@@ -1,26 +1,12 @@
-/**
- * 缓存工具类，用于缓存 API 请求结果
- */
-
-// 缓存键前缀
 const CACHE_PREFIX = 'ai_paper_';
 
-// 缓存有效期（毫秒）
-const CACHE_EXPIRATION = 24 * 60 * 60 * 1000; // 24小时
+const CACHE_EXPIRATION = 24 * 60 * 60 * 1000; 
 
-/**
- * 缓存项接口
- */
 interface CacheItem<T> {
   data: T;
   timestamp: number;
 }
 
-/**
- * 设置缓存
- * @param key 缓存键
- * @param data 缓存数据
- */
 export const setCache = <T>(key: string, data: T): void => {
   try {
     const cacheKey = `${CACHE_PREFIX}${key}`;
@@ -34,11 +20,6 @@ export const setCache = <T>(key: string, data: T): void => {
   }
 };
 
-/**
- * 获取缓存
- * @param key 缓存键
- * @returns 缓存数据，如果缓存不存在或已过期则返回 null
- */
 export const getCache = <T>(key: string): T | null => {
   try {
     const cacheKey = `${CACHE_PREFIX}${key}`;
@@ -51,7 +32,6 @@ export const getCache = <T>(key: string): T | null => {
     const cacheItem: CacheItem<T> = JSON.parse(cacheJson);
     const now = Date.now();
     
-    // 检查缓存是否过期
     if (now - cacheItem.timestamp > CACHE_EXPIRATION) {
       localStorage.removeItem(cacheKey);
       return null;
@@ -64,10 +44,6 @@ export const getCache = <T>(key: string): T | null => {
   }
 };
 
-/**
- * 清除指定缓存
- * @param key 缓存键
- */
 export const clearCache = (key: string): void => {
   try {
     const cacheKey = `${CACHE_PREFIX}${key}`;
@@ -77,9 +53,6 @@ export const clearCache = (key: string): void => {
   }
 };
 
-/**
- * 清除所有缓存
- */
 export const clearAllCache = (): void => {
   try {
     Object.keys(localStorage).forEach(key => {
@@ -92,12 +65,6 @@ export const clearAllCache = (): void => {
   }
 };
 
-/**
- * 生成缓存键
- * @param baseKey 基础键名
- * @param params 参数对象
- * @returns 缓存键
- */
 export const generateCacheKey = (baseKey: string, params: Record<string, any>): string => {
   const sortedParams = Object.keys(params)
     .sort()

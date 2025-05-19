@@ -1,25 +1,14 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
-// 创建axios实例
 const instance = axios.create({
-  timeout: 60000, // 超时时间 60 秒
+  timeout: 60000, 
   headers: {
     'Content-Type': 'application/json',
   }
 });
 
-// 请求拦截器
 instance.interceptors.request.use(
   (config) => {
-    console.log('发送请求:', {
-      url: config.url,
-      method: config.method,
-      baseURL: config.baseURL,
-      headers: config.headers,
-      params: config.params,
-      data: config.data
-    });
-   
     return config;
   },
   (error) => {
@@ -28,24 +17,9 @@ instance.interceptors.request.use(
   }
 );
 
-// 响应拦截器
 instance.interceptors.response.use(
   (response) => {
-    // 统一处理响应
-    console.log('收到响应:', {
-      status: response.status,
-      statusText: response.statusText,
-      headers: response.headers,
-      data: response.data,
-      config: {
-        url: response.config.url,
-        method: response.config.method,
-        baseURL: response.config.baseURL
-      }
-    });
-    
     const { data } = response;
-    
     return data;
   },
   (error) => {
@@ -64,32 +38,22 @@ instance.interceptors.response.use(
         }
       });
     } else if (error.request) {
-      // 请求发出但没有收到响应
       console.error('没有收到响应:', error.request);
     } else {
-      // 设置请求时发生错误
       console.error('请求错误:', error.message);
     }
-    
-    // 统一处理错误
     const { response } = error;
     if (response) {
-      // 根据状态码处理错误
       switch (response.status) {
         case 401:
-          // 未授权处理
           break;
         case 403:
-          // 禁止访问处理
           break;
         case 404:
-          // 资源不存在处理
           break;
         case 500:
-          // 服务器错误处理
           break;
         default:
-          // 其他错误处理
           break;
       }
     }
@@ -97,27 +61,22 @@ instance.interceptors.response.use(
   }
 );
 
-// 封装GET请求
 export const get = <T = any>(url: string, params?: any, config?: AxiosRequestConfig): Promise<T> => {
   return instance.get(url, { params, ...config });
 };
 
-// 封装POST请求
 export const post = <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
   return instance.post(url, data, config);
 };
 
-// 封装PUT请求
 export const put = <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
   return instance.put(url, data, config);
 };
 
-// 封装DELETE请求
 export const del = <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
   return instance.delete(url, config);
 };
 
-// 封装上传文件请求
 export const upload = <T = any>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> => {
   return instance.post(url, formData, {
     headers: {
@@ -127,9 +86,7 @@ export const upload = <T = any>(url: string, formData: FormData, config?: AxiosR
   });
 };
 
-// 导出API接口
 export const API = {
-  // 论文相关接口
   papers: {
     upload: (formData: FormData) => upload<any>('/api/papers/upload', formData),
     list: (page: number = 1, pageSize: number = 10) => {
@@ -140,7 +97,6 @@ export const API = {
     },
     getById: (id: string) => get<any>(`/api/papers/${id}`),
   },
-  // 博客相关接口
   blogs: {
     upload: (formData: FormData) => upload<any>('/api/blogs/upload', formData),
     list: (page: number = 1, pageSize: number = 10) => {
@@ -151,17 +107,16 @@ export const API = {
     },
     getById: (id: string) => get<any>(`/api/blogs/${id}`),
   },
-  // 聊天相关接口
   chat: {
-    // 生成报告/对话
     ask: (sourceType: 'paper' | 'blog', sourceId: string | number, userQuestion: string) => 
       post<any>('/api/chat/ask', { sourceType, sourceId, userQuestion }),
-    // 纯文本对话
     generate: (prompt: string, context?: string) => 
       post<{report: string}>('/api/generate', { prompt, context }),
-    // 获取报告预览
     getReport: (reportId: string, page?: number, pageSize?: number) => 
       get<any>(`/api/reports/${reportId}${page ? `?page=${page}&pageSize=${pageSize}` : ''}`),
+    list: () => get<any>('/api/chat/conversations'),
+    history: (id: string) => get<any>(`/api/chat/conversations/${id}`),
+    send: (content: string, context?: string) => post<any>('/api/chat/message', { content, context }),
   },
 };
 

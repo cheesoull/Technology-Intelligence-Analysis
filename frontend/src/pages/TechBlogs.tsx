@@ -33,17 +33,13 @@ const TechBlogs: React.FC = () => {
       
       console.log('获取到技术博客数据:', response);
       
-      // 处理不同的响应格式
       if (Array.isArray(response)) {
-        // 直接是数组格式
         setBlogs(response);
         setTotal(response.length);
       } else if (response.data && Array.isArray(response.data)) {
-        // {data: [...], total: number} 格式
         setBlogs(response.data);
         setTotal(response.total || response.data.length);
       } else if (response.blogs && Array.isArray(response.blogs)) {
-        // {blogs: [...], total: number} 格式
         setBlogs(response.blogs);
         setTotal(response.total || response.blogs.length);
       } else {
@@ -61,7 +57,6 @@ const TechBlogs: React.FC = () => {
   };
 
   useEffect(() => {
-    // 检查是否是从 AI 聊天页面跳转过来的
     const returnToAIChat = localStorage.getItem('returnToAIChat');
     if (returnToAIChat === 'true') {
       setFromAIChat(true);
@@ -122,7 +117,6 @@ const TechBlogs: React.FC = () => {
                         localStorage.setItem('selectedContentTypeForAIChat', 'blog');
                         window.location.href = '/ai-chat';
                       } else {
-                        console.log(`查看博客: ${blog.id}`);
                       }
                     }}
                   >

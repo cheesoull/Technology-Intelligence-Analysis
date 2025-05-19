@@ -107,7 +107,6 @@ const Login: React.FC = () => {
           type: 'email'
         };
       } else {
-        // 账号密码登录
         loginData = {
           username: email || mobile,
           password,
@@ -127,11 +126,9 @@ const Login: React.FC = () => {
       
       if (data.code === 200) {
         message.success('登录成功');
-        // 保存用户信息和token
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('user', JSON.stringify(data.data.user));
         
-        // 跳转到首页
         navigate('/');
       } else {
         message.error(data.message || '登录失败');

@@ -12,19 +12,13 @@ const History: React.FC = () => {
     error,
   } = useChat();
   const navigate = useNavigate();
-
-  // 加载对话列表
   useEffect(() => {
     loadConversations();
   }, [loadConversations]);
-
-  // 处理对话选择
   const handleSelectConversation = (id: string) => {
     selectConversation(id);
     navigate(`/chat/${id}`);
   };
-
-  // 格式化日期
   const formatDate = (date: Date) => {
     return date.toLocaleString('zh-CN', {
       year: 'numeric',
@@ -34,12 +28,8 @@ const History: React.FC = () => {
       minute: '2-digit',
     });
   };
-
-  // 获取对话预览
   const getConversationPreview = (messages: any[]) => {
     if (messages.length === 0) return '无消息';
-    
-    // 获取最后一条用户消息
     const lastUserMessage = [...messages]
       .reverse()
       .find(msg => msg.role === 'user');

@@ -13,38 +13,27 @@ const Report: React.FC = () => {
   const [reportTitle, setReportTitle] = useState<string>('AI报告');
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // 加载对话历史
   useEffect(() => {
     if (id) {
       loadConversationHistory(id);
     }
   }, [id, loadConversationHistory]);
 
-  // 获取当前对话
   const currentConversation = conversations.find(conv => conv.id === id);
 
-  // 生成报告内容
   const generateReport = () => {
     if (!currentConversation) return;
-    
     setIsGenerating(true);
-    
-    // 模拟生成报告的过程
     setTimeout(() => {
-      // 提取对话内容生成报告
       const assistantMessages = currentConversation.messages.filter(
         msg => msg.role === 'assistant'
       );
       
-      // 设置报告标题
       setReportTitle(`AI对话报告 - ${currentConversation.title}`);
       
-      // 构建Markdown格式的报告内容
       let content = `# ${currentConversation.title}\n\n`;
       content += `*生成时间: ${new Date().toLocaleString()}*\n\n`;
       content += `## 对话摘要\n\n`;
-      
-      // 添加对话内容
       content += `## 详细内容\n\n`;
       
       currentConversation.messages.forEach((msg, index) => {
@@ -52,24 +41,18 @@ const Report: React.FC = () => {
         content += `### ${role} (${msg.timestamp.toLocaleString()})\n\n`;
         content += `${msg.content}\n\n`;
         
-        // 在用户和AI消息之间添加分隔线
         if (index < currentConversation.messages.length - 1) {
           content += `---\n\n`;
         }
       });
-      
-      // 添加结论部分
       content += `## 结论\n\n`;
       
       if (assistantMessages.length > 0) {
-        // 使用最后一条AI消息作为结论
         const lastMessage = assistantMessages[assistantMessages.length - 1];
         content += `${lastMessage.content}\n\n`;
       } else {
         content += `*本次对话没有AI回复*\n\n`;
       }
-      
-      // 设置报告内容
       setReportContent(content);
       setIsGenerating(false);
     }, 1500);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Typography, Spin, Input, Select, Button, message, Checkbox, Tag } from 'antd';
+import { Typography, Spin, Input, Button, message, Tag } from 'antd';
 import { Paper } from '../types/paper';
 import { ApiResult } from '../types/api';
 import {
@@ -7,7 +7,6 @@ import {
   StarOutlined,
   StarFilled,
   ArrowUpOutlined,
-  UserOutlined,
   DownOutlined
 } from '@ant-design/icons';
 import { getPaperList, getPaperDetails } from '../services/paperService';
@@ -15,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/custom.css';
 
 const { Title } = Typography;
-const { Option } = Select;
+
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -27,40 +26,27 @@ const Home: React.FC = () => {
   const [pageSize] = useState(10);
   const [, setTotal] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [searchType, setSearchType] = useState('all');
+
   const [searching, setSearching] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [processingFavorite, setProcessingFavorite] = useState(false);
-  
-  // 新增筛选条件
-  const [filterRecentYears, setFilterRecentYears] = useState(false); // 近两年
-  const [filterCitationCount, setFilterCitationCount] = useState(false); // 引用次数不为0
+  const [filterRecentYears] = useState(false); 
+  const [filterCitationCount] = useState(false); 
 
-  // 获取论文列表数据
   const fetchPapers = async (page = 1, paperSize = 20, keywords: string[] = [], isLoadMore = false) => {
     try {
       if (!isLoadMore) {
         setLoading(true);
       }
-
-      // 将页码转换为API所需格式（从0开始）
       const apiPage = page - 1;
-
-      // 使用固定关键词获取LLM和AI相关论文
       const searchKeywords = keywords.length > 0 ? keywords : ['LLM', 'AI'];
-      console.log('使用关键词获取论文:', searchKeywords);
+      const paperLimit = paperSize; 
 
-      // 获取更多论文数据
-      const paperLimit = paperSize; // 已修改为20篇
-
-      // 使用AMiner API获取真实论文数据
       let result: ApiResult;
       try {
         result = await getPaperList(apiPage, paperLimit, searchKeywords);
       } catch (error) {
-        console.error('API请求失败，使用模拟数据:', error);
-        // 使用模拟数据
         result = {
           code: 0,
           message: 'success',
@@ -99,45 +85,32 @@ const Home: React.FC = () => {
           total: 2
         };
       }
-
-      console.log('获取到的论文数据:', result);
-
       let newPapers: Paper[] = [];
 
       if ('papers' in result && Array.isArray(result.papers)) {
-        console.log('成功解析论文数据（papers格式），数量:', result.papers.length);
         newPapers = result.papers;
         setTotal(result.total || 0);
       } else if ('data' in result && Array.isArray(result.data)) {
-        console.log('成功解析论文数据（data格式），数量:', result.data.length);
         newPapers = result.data;
         setTotal(result.total || 0);
       } else if (Array.isArray(result)) {
-        console.log('成功解析论文数据（数组格式），数量:', result.length);
         newPapers = result;
         setTotal(result.length);
       } else {
-        console.warn('无法识别的数据格式或无数据');
         if (!isLoadMore) {
           message.info('未找到相关论文');
         }
       }
 
-      // 获取论文详细信息
       try {
-        // 提取所有论文ID
         const paperIds = newPapers
           .filter(paper => paper.paper_id)
           .map(paper => paper.paper_id as string);
 
         if (paperIds.length > 0) {
-          console.log('尝试获取论文详细信息，论文ID数量:', paperIds.length);
           const detailedPapers = await getPaperDetails(paperIds);
 
           if (detailedPapers.length > 0) {
-            console.log('成功获取论文详细信息，数量:', detailedPapers.length);
-
-            // 将详细信息合并到论文列表中
             const paperMap = new Map<string, Paper>();
             detailedPapers.forEach(paper => {
               if (paper.paper_id) {
@@ -145,7 +118,6 @@ const Home: React.FC = () => {
               }
             });
 
-            // 更新论文信息
             newPapers = newPapers.map(paper => {
               if (paper.paper_id && paperMap.has(paper.paper_id)) {
                 const detailedPaper = paperMap.get(paper.paper_id)!;
@@ -162,25 +134,20 @@ const Home: React.FC = () => {
           }
         }
       } catch (error) {
-        console.error('获取论文详细信息失败:', error);
       }
 
-      // 更新论文列表
       if (isLoadMore) {
         setPapers(prev => [...prev, ...newPapers]);
       } else {
         setPapers(newPapers);
       }
 
-      // 如果没有论文数据，显示提示
       if (newPapers.length === 0 && !isLoadMore) {
         message.info('未找到相关论文');
       }
 
-      // 更新是否有更多数据
       setHasMore(newPapers.length === paperLimit);
     } catch (error) {
-      console.error('获取论文列表失败:', error);
       if (!isLoadMore) {
         setError('获取论文列表失败，请稍后重试');
       }
@@ -190,7 +157,6 @@ const Home: React.FC = () => {
     }
   };
 
-  // 加载更多论文
   const loadMorePapers = () => {
     if (!hasMore || loading) return;
     const nextPage = currentPage + 1;
@@ -198,7 +164,6 @@ const Home: React.FC = () => {
     fetchPapers(nextPage, pageSize, searchKeyword ? searchKeyword.split(/\s+/).filter(k => k.trim().length > 0) : [], true);
   };
 
-  // 监听滚动事件，实现无限滚动
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
     if (scrollHeight - scrollTop - clientHeight < 200 && !loading && hasMore) {
@@ -206,7 +171,6 @@ const Home: React.FC = () => {
     }
   };
 
-  // 回到顶部
   const scrollToTop = () => {
     if (paperListRef.current) {
       paperListRef.current.scrollTo({
@@ -216,11 +180,9 @@ const Home: React.FC = () => {
     }
   };
 
-  // 检查用户是否登录
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userInfo, setUserInfo] = useState<{username?: string} | null>(null);
+  const [, setIsLoggedIn] = useState(false);
+  const [, setUserInfo] = useState<{username?: string} | null>(null);
 
-  // 检查登录状态
   const checkLoginStatus = () => {
     const token = localStorage.getItem('token');
     const userInfoStr = localStorage.getItem('userInfo');
@@ -231,7 +193,6 @@ const Home: React.FC = () => {
         setIsLoggedIn(true);
         setUserInfo(userInfo);
       } catch (e) {
-        console.error('解析用户信息失败:', e);
         setIsLoggedIn(false);
       }
     } else {
@@ -239,17 +200,11 @@ const Home: React.FC = () => {
     }
   };
 
-  // 跳转到登录页面
-  const goToLogin = () => {
-    navigate('/login');
-  };
 
-  // 初始化
+
   useEffect(() => {
-    // 检查登录状态
     checkLoginStatus();
     
-    // 从本地存储加载收藏列表
     const savedFavorites = localStorage.getItem('favorites');
     if (savedFavorites) {
       try {
@@ -260,11 +215,9 @@ const Home: React.FC = () => {
       }
     }
 
-    // 确保使用默认关键词获取数据
     fetchPapers(1, pageSize, ['AI', 'LLM']);
   }, []);
 
-  // 处理搜索
   const handleSearch = () => {
     if (!searchKeyword.trim()) {
       message.info('请输入搜索关键词');
@@ -272,15 +225,14 @@ const Home: React.FC = () => {
     }
 
     setSearching(true);
-    setCurrentPage(1); // 重置到第一页
-    setHasMore(true); // 重置加载更多状态
+    setCurrentPage(1);
+    setHasMore(true); 
     const keywords = searchKeyword.split(/[,\s]+/).filter(k => k);
     fetchPapers(1, 20, keywords).finally(() => {
       setSearching(false);
     });
   };
 
-  // 处理论文点击
   const handlePaperClick = (paper: Paper) => {
     if (paper.paper_id) {
       navigate(`/paper/${paper.paper_id}`);
@@ -289,21 +241,17 @@ const Home: React.FC = () => {
     }
   };
 
-  // 保存收藏列表到本地存储
   const saveFavoritesToStorage = (favorites: Set<string>) => {
     localStorage.setItem('favorites', JSON.stringify([...favorites]));
   };
 
-  // 处理收藏点击
   const handleFavoriteClick = (e: React.MouseEvent, paperId: string) => {
-    e.stopPropagation(); // 阻止事件冒泡
+    e.stopPropagation(); 
 
-    // 防止重复点击
     if (processingFavorite) return;
 
     setProcessingFavorite(true);
 
-    // 更新收藏状态
     const isFavorited = favorites.has(paperId);
     const newFavorites = new Set(favorites);
 
@@ -315,30 +263,25 @@ const Home: React.FC = () => {
       message.success('已添加到收藏');
     }
 
-    // 更新状态
     setFavorites(newFavorites);
     saveFavoritesToStorage(newFavorites);
 
-    // 将收藏数量发送到 MainLayout 组件
     const event = new CustomEvent('updateFavoriteCount', {
       detail: { count: newFavorites.size }
     });
     window.dispatchEvent(event);
 
-    // 重置处理状态
     setTimeout(() => {
       setProcessingFavorite(false);
     }, 300);
   };
 
-  // 初始化时更新收藏数量
   useEffect(() => {
     const event = new CustomEvent('updateFavoriteCount', {
       detail: { count: favorites.size }
     });
     window.dispatchEvent(event);
     
-    // 监听登录状态变化
     const handleLoginStatusChange = () => {
       checkLoginStatus();
     };
@@ -350,7 +293,6 @@ const Home: React.FC = () => {
     };
   }, []);
 
-  // 加载中状态
   if (loading && papers.length === 0) {
     return (
       <div className="text-center p-[50px]">
@@ -359,7 +301,6 @@ const Home: React.FC = () => {
     );
   }
 
-  // 错误状态
   if (error && papers.length === 0) {
     return (
       <div className="text-center p-[50px]">
