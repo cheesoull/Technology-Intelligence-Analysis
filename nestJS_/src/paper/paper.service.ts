@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Paper } from './paper.entity';
+import pdfParse from 'pdf-parse';
+import * as fs from 'fs';
 
 @Injectable()
 export class PaperService {
@@ -11,9 +13,17 @@ export class PaperService {
   ) {}
 
   async savePaper(file: Express.Multer.File, data: { title: string; author: string; abstract: string }) {
+    const filePath = file.path;
+
+    const pdfBuffer = fs.readFileSync(filePath);
+    const parsed = await pdfParse(pdfBuffer);
+    const lines = parsed.text.trim().split('\n').map(line => line.trim()).filter(Boolean);
+    const firstLine = lines[0] || 'Untitled Paper';
 
     const paper = this.paperRepo.create({
-      ...data,
+      title: data.title || firstLine,
+      author: data.author,
+      abstract: data.abstract,
       content: '',
       fullText: '',
       filePath: file.path,

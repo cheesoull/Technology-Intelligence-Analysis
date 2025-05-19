@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Blog } from './blog.entity';
+import pdfParse from 'pdf-parse';
+import * as fs from 'fs';
 
 @Injectable()
 export class BlogService {
@@ -11,8 +13,14 @@ export class BlogService {
   ) {}
 
   async saveBlog(file: Express.Multer.File, data: { title: string; content?: string }) {
+    const filePath = file.path;
+
+    const pdfBuffer = fs.readFileSync(filePath);
+    const parsed = await pdfParse(pdfBuffer);
+    const lines = parsed.text.trim().split('\n').map(line => line.trim()).filter(Boolean);
+    const firstLine = lines[0] || 'Untitled Blog';
     const blog = this.blogRepo.create({
-      title: data.title,
+      title: data.title || firstLine,
       filePath: file.path,
       content: '', 
       uploadDate: new Date(),

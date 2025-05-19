@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Paper } from '../paper/paper.entity';
-import { Blog } from 'src/blog/blog.entity';
+import { Blog } from '../blog/blog.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Report } from '../report/report.entity';
-import { AutoAgentService } from 'src/auto-agent/auto-agent.service';
+import { AutoAgentService } from '../auto-agent/auto-agent.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import pdfParse from 'pdf-parse';
