@@ -11,9 +11,6 @@ import MainLayout from './components/MainLayout';
 import AIChat from './pages/AIChat';
 import Papers from './pages/Papers';
 import TechBlogs from './pages/TechBlogs';
-
-// 新增AI对话系统页面
-import Chat from './pages/Chat';
 import History from './pages/History';
 import Report from './pages/Report';
 
@@ -22,7 +19,7 @@ const AppLayout = () => {
   return (
     <Layout className="min-h-screen">
       <MainLayout>
-        <div className="container-fluid mx-auto px-6 py-10 max-w-[1800px] pt-[64px]">
+        <div className="container-fluid mx-auto py-15 pb-3 max-w-[2000px]">
           <Outlet />
         </div>
       </MainLayout>
@@ -40,8 +37,8 @@ const App: React.FC = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         
         {/* AI对话系统页面 - 不使用主布局 */}
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/chat/:id" element={<Chat />} />
+        <Route path="/chat" element={<AIChat />} />
+        <Route path="/chat/:id" element={<AIChat />} />
         <Route path="/history" element={<History />} />
         <Route path="/report" element={<Report />} />
         <Route path="/report/:id" element={<Report />} />

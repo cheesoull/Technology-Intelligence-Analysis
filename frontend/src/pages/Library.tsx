@@ -20,7 +20,7 @@ const Library: React.FC = () => {
       // 尝试从后端获取数据
       try {
         console.log('开始获取本地论文列表...');
-        const response = await fetch('/api/paper/local');
+        const response = await fetch('/api/papers/local');
         
         if (response.ok) {
           const result = await response.json();
@@ -144,7 +144,7 @@ const Library: React.FC = () => {
   // 删除论文
   const handleDeletePaper = async (paperId: string) => {
     try {
-      const response = await fetch(`/api/paper/${paperId}`, {
+      const response = await fetch(`/api/papers/${paperId}`, {
         method: 'DELETE',
       });
       

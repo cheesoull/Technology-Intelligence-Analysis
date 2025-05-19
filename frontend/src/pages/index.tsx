@@ -100,31 +100,23 @@ const Home: React.FC = () => {
         };
       }
 
-      // 检查返回的数据结构，处理不同的响应格式
       console.log('获取到的论文数据:', result);
 
       let newPapers: Paper[] = [];
 
-      // 处理 {papers, total} 格式
       if ('papers' in result && Array.isArray(result.papers)) {
         console.log('成功解析论文数据（papers格式），数量:', result.papers.length);
         newPapers = result.papers;
         setTotal(result.total || 0);
-      } 
-      // 处理 {data, total} 格式
-      else if ('data' in result && Array.isArray(result.data)) {
+      } else if ('data' in result && Array.isArray(result.data)) {
         console.log('成功解析论文数据（data格式），数量:', result.data.length);
         newPapers = result.data;
         setTotal(result.total || 0);
-      } 
-      // 处理直接返回数组的格式
-      else if (Array.isArray(result)) {
+      } else if (Array.isArray(result)) {
         console.log('成功解析论文数据（数组格式），数量:', result.length);
         newPapers = result;
         setTotal(result.length);
-      } 
-      // 处理无数据的情况
-      else {
+      } else {
         console.warn('无法识别的数据格式或无数据');
         if (!isLoadMore) {
           message.info('未找到相关论文');
@@ -395,24 +387,6 @@ const Home: React.FC = () => {
                   style={{ boxShadow: 'none' }}
                 />
               </div>
-
-              {/* 搜索类型选择 */}
-              <div className="mr-2">
-                <Select
-                  defaultValue="all"
-                  value={searchType}
-                  onChange={value => setSearchType(value)}
-                  className="w-[100px] border-0"
-                  bordered={false}
-                  dropdownMatchSelectWidth={false}
-                >
-                  <Option value="all">全部</Option>
-                  <Option value="title">标题</Option>
-                  <Option value="author">作者</Option>
-                  <Option value="keyword">关键词</Option>
-                </Select>
-              </div>
-
               {/* 搜索按钮 */}
               <div>
                 <Button
@@ -421,15 +395,14 @@ const Home: React.FC = () => {
                   loading={searching}
                   onClick={handleSearch}
                   className="h-[40px] w-[80px] flex items-center justify-center rounded-full"
-                  style={{ backgroundColor: '#4285F4', borderColor: '#4285F4' }}
+                  style={{ backgroundColor: '#4285F4', borderColor: '#4285F4'}}
                 >
                   搜索
                 </Button>
               </div>
             </div>
-            
             {/* 推荐区域 - 蓝色背景 */}
-            <div className="p-4 bg-blue-50 rounded-b-lg">
+            <div className="p-4 py-6 pt-5 bg-blue-50 rounded-b-lg">
               <div className="flex items-center mb-2">
                 <span className="text-blue-800 font-medium mr-2">热门关键词:</span>
                 <div className="flex flex-wrap gap-2">
@@ -464,7 +437,7 @@ const Home: React.FC = () => {
             </div>
           </div>
           
-          {/* 移除了用户登录/注册区域 */}
+          <div className="text-xl font-bold text-blue-600 px-8 py-4">今日推荐</div>
           
           {/* 论文列表区域 */}
           <div className="w-[98%] mx-auto bg-white rounded-lg">

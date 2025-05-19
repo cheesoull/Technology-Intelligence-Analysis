@@ -5,12 +5,12 @@ import { getCache, setCache, generateCacheKey } from '../utils/cacheUtils';
 // AMiner API 端点
 const API_BASE_URL = 'https://datacenter.aminer.cn/gateway/open_platform';
 const AMINER_API = {
-  PAPER_INFO: `${API_BASE_URL}/api/paper/info`,               // 获取论文基本信息 (POST)
-  PAPER_DETAIL: `${API_BASE_URL}/api/paper/detail`,           // 获取论文详情 (GET)
-  PAPER_RELATION: `${API_BASE_URL}/api/paper/relation`,        // 获取论文引用关系 (GET)
-  PAPER_SEARCH: `${API_BASE_URL}/api/paper/list/by/search/venue`, // 搜索论文 (GET)
-  PAPER_BATCH: `${API_BASE_URL}/api/paper/batch`,             // 批量获取论文信息 (POST)
-  PAPER_PDF: `${API_BASE_URL}/api/paper/pdf`                  // 获取论文PDF (GET)
+  PAPER_INFO: `${API_BASE_URL}/api/papers/info`,               // 获取论文基本信息 (POST)
+  PAPER_DETAIL: `${API_BASE_URL}/api/papers/detail`,           // 获取论文详情 (GET)
+  PAPER_RELATION: `${API_BASE_URL}/api/papers/relation`,        // 获取论文引用关系 (GET)
+  PAPER_SEARCH: `${API_BASE_URL}/api/papers/list/by/search/venue`, // 搜索论文 (GET)
+  PAPER_BATCH: `${API_BASE_URL}/api/papers/batch`,             // 批量获取论文信息 (POST)
+  PAPER_PDF: `${API_BASE_URL}/api/papers/pdf`                  // 获取论文PDF (GET)
 };
 
 // 添加请求头部
@@ -39,7 +39,7 @@ export const uploadPaper = async (file: File): Promise<Paper> => {
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await fetch('/api/paper/upload', {
+    const response = await fetch('/api/papers/upload', {
       method: 'POST',
       body: formData,
     });
@@ -203,10 +203,41 @@ export const getPaperById = async (id: string): Promise<Paper> => {
   try {
     console.log('从 API 获取论文详情:', id);
     
+    // 首先尝试使用后端API获取论文详情（符合接口文档）
+    try {
+      console.log('尝试使用后端API获取论文详情:', id);
+      const response = await fetch(`/api/papers/${id}`);
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('后端API返回的论文数据:', result);
+        
+        // 处理不同的响应格式
+        if (result.code === 200 && result.data) {
+          // 标准响应格式
+          const paper = result.data;
+          setCache(cacheKey, paper);
+          return paper;
+        } else if (result.code === 0 && result.data) {
+          // 兼容旧的响应格式
+          const paper = result.data;
+          setCache(cacheKey, paper);
+          return paper;
+        } else if (result.data && (result.data.code === 200 || result.data.code === 0) && result.data.data) {
+          // 处理嵌套响应格式的情况
+          const paper = result.data.data;
+          setCache(cacheKey, paper);
+          return paper;
+        }
+      }
+    } catch (error) {
+      console.warn('使用后端API获取论文详情失败:', error);
+    }
+    
     // 处理本地上传的论文（ID以local_开头）
     if (id.startsWith('local_')) {
       console.log('检测到本地论文ID，从后端获取详情:', id);
-      const response = await fetch(`/api/paper/${id}`);
+      const response = await fetch(`/api/papers/${id}`);
       
       if (!response.ok) {
         throw new Error('获取本地论文详情失败');
@@ -556,7 +587,7 @@ export const getPaperList = async (page: number = 0, size: number = 10, keywords
           
           // 如果还是没有作者，尝试从标题或其他字段推断
           if (authors.length === 0 && item.title) {
-            // 不添加默认作者，让前端显示“作者暂无”
+            // 不添加默认作者，让前端显示"作者暂无"
             authors = [];
           }
           

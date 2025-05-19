@@ -2,8 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 
 // 创建axios实例
 const instance = axios.create({
-  baseURL: '/api',
-  timeout: 30000,
+  timeout: 60000, // 超时时间 60 秒
   headers: {
     'Content-Type': 'application/json',
   }
@@ -12,14 +11,19 @@ const instance = axios.create({
 // 请求拦截器
 instance.interceptors.request.use(
   (config) => {
-    // 可以在这里添加token等认证信息
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    console.log('发送请求:', {
+      url: config.url,
+      method: config.method,
+      baseURL: config.baseURL,
+      headers: config.headers,
+      params: config.params,
+      data: config.data
+    });
+   
     return config;
   },
   (error) => {
+    console.error('请求拦截器错误:', error);
     return Promise.reject(error);
   }
 );
@@ -28,14 +32,45 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => {
     // 统一处理响应
+    console.log('收到响应:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+      data: response.data,
+      config: {
+        url: response.config.url,
+        method: response.config.method,
+        baseURL: response.config.baseURL
+      }
+    });
+    
     const { data } = response;
-    // 根据记忆中的API格式，处理不同的状态码
-    if (data.code === 200 || data.code === 0) {
-      return data.data;
-    }
-    return Promise.reject(new Error(data.message || '请求失败'));
+    
+    return data;
   },
   (error) => {
+    console.error('响应错误:', error);
+    
+    if (error.response) {
+      console.error('错误响应详情:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        headers: error.response.headers,
+        data: error.response.data,
+        config: {
+          url: error.response.config.url,
+          method: error.response.config.method,
+          baseURL: error.response.config.baseURL
+        }
+      });
+    } else if (error.request) {
+      // 请求发出但没有收到响应
+      console.error('没有收到响应:', error.request);
+    } else {
+      // 设置请求时发生错误
+      console.error('请求错误:', error.message);
+    }
+    
     // 统一处理错误
     const { response } = error;
     if (response) {
@@ -96,19 +131,37 @@ export const upload = <T = any>(url: string, formData: FormData, config?: AxiosR
 export const API = {
   // 论文相关接口
   papers: {
-    upload: (formData: FormData) => upload<any>('/papers/upload', formData),
-    list: (page: number = 1, pageSize: number = 10) => get<any>(`/papers/list?page=${page}&pageSize=${pageSize}`),
+    upload: (formData: FormData) => upload<any>('/api/papers/upload', formData),
+    list: (page: number = 1, pageSize: number = 10) => {
+      const params = new URLSearchParams();
+      params.append('page', String(page));
+      params.append('pageSize', String(pageSize));
+      return get<any>(`/api/papers/list?${params.toString()}`);
+    },
+    getById: (id: string) => get<any>(`/api/papers/${id}`),
   },
   // 博客相关接口
   blogs: {
-    upload: (formData: FormData) => upload<any>('/blogs/upload', formData),
-    list: (page: number = 1, pageSize: number = 10) => get<any>(`/blogs/list?page=${page}&pageSize=${pageSize}`),
+    upload: (formData: FormData) => upload<any>('/api/blogs/upload', formData),
+    list: (page: number = 1, pageSize: number = 10) => {
+      const params = new URLSearchParams();
+      params.append('page', String(page));
+      params.append('pageSize', String(pageSize));
+      return get<any>(`/api/blogs/list?${params.toString()}`);
+    },
+    getById: (id: string) => get<any>(`/api/blogs/${id}`),
   },
   // 聊天相关接口
   chat: {
-    send: (message: string, context?: string) => post<any>('/chat/send', { message, context }),
-    history: (conversationId: string) => get<any>(`/chat/history/${conversationId}`),
-    list: () => get<any>('/chat/list'),
+    // 生成报告/对话
+    ask: (sourceType: 'paper' | 'blog', sourceId: string | number, userQuestion: string) => 
+      post<any>('/api/chat/ask', { sourceType, sourceId, userQuestion }),
+    // 纯文本对话
+    generate: (prompt: string, context?: string) => 
+      post<{report: string}>('/api/generate', { prompt, context }),
+    // 获取报告预览
+    getReport: (reportId: string, page?: number, pageSize?: number) => 
+      get<any>(`/api/reports/${reportId}${page ? `?page=${page}&pageSize=${pageSize}` : ''}`),
   },
 };
 

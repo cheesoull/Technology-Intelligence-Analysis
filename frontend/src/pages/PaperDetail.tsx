@@ -676,7 +676,7 @@ ${aiAnalysis.relatedFields.map(field => `- ${field}`).join('\n')}
                             <Dragger
                               name="file"
                               multiple={false}
-                              action="/api/paper/upload"
+                              action="/api/papers/upload"
                               onChange={info => {
                                 if (info.file.status === 'done') {
                                   message.success(`${info.file.name} 上传成功`);

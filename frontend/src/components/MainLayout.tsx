@@ -11,8 +11,10 @@ import {
   LogoutOutlined,
   MessageOutlined,
   ReadOutlined,
-  BookOutlined
+  BookOutlined,
+  CompassOutlined
 } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 
 const { Sider, Content } = Layout;
 
@@ -37,7 +39,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     if (path === '/discovery') return '2';
     if (path === '/library') return '3';
     if (path === '/favorites') return '4';
-    if (path === '/ai-chat' || path.startsWith('/chat') || path.startsWith('/history') || path.startsWith('/report')) return '5';
+    if (path === '/ai-chat') return '5'; 
     if (path === '/papers') return '6';
     if (path === '/tech-blogs') return '7';
     return '1'; // 默认选中首页
@@ -59,7 +61,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         navigate('/favorites');
         break;
       case '5':
-        navigate('/ai-chat');
+        navigate('/ai-chat'); 
         break;
       case '6':
         navigate('/papers');
@@ -129,7 +131,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   };
 
-  // 控制侧边栏伸缩：只在用户区和菜单区都没有hover时才收缩
+  // 控制侧边栏伸缩
   React.useEffect(() => {
     if (!hoveringMenu && !hoveringUser) {
       setSiderCollapsed(true);
@@ -177,7 +179,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 >
                   <div className="cursor-pointer flex flex-col items-center">
                     <Avatar 
-                      size={36} 
+                      size={50} 
                       icon={<UserOutlined />} 
                       className="bg-blue-500"
                       style={{ backgroundColor: '#0D47A1' }}
@@ -231,45 +233,38 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               {
                 key: '1',
                 icon: <HomeOutlined />,
-                label: '主页',
-                style: getSelectedKey() === '1' ? { background: '#E3F2FD', borderRadius: '0 20px 20px 0', marginRight: '20px' } : {}
+                label: <Link to="/">首页</Link>,
               },
               {
                 key: '2',
-                icon: <ExperimentOutlined />,
-                label: '科研发现',
-                style: getSelectedKey() === '2' ? { background: '#E3F2FD', borderRadius: '0 20px 20px 0', marginRight: '20px' } : {}
+                icon: <CompassOutlined />,
+                label: <Link to="/discovery">科研发现</Link>,
               },
               {
                 key: '3',
-                icon: <FileTextOutlined />,
-                label: '个人文献库',
-                style: getSelectedKey() === '3' ? { background: '#E3F2FD', borderRadius: '0 20px 20px 0', marginRight: '20px' } : {}
+                icon: <BookOutlined />,
+                label: <Link to="/library">我的文库</Link>,
               },
               {
                 key: '4',
                 icon: <StarOutlined />,
-                label: '收藏论文',
-                style: getSelectedKey() === '4' ? { background: '#E3F2FD', borderRadius: '0 20px 20px 0', marginRight: '20px' } : {}
+                label: <Link to="/favorites">收藏论文</Link>,
               },
               {
                 key: '5',
                 icon: <MessageOutlined />,
-                label: 'AI对话',
-                style: getSelectedKey() === '5' ? { background: '#E3F2FD', borderRadius: '0 20px 20px 0', marginRight: '20px' } : {}
+                label: <Link to="/ai-chat">AI 对话</Link>,
               },
               {
                 key: '6',
-                icon: <ReadOutlined />,
-                label: '论文列表',
-                style: getSelectedKey() === '6' ? { background: '#E3F2FD', borderRadius: '0 20px 20px 0', marginRight: '20px' } : {}
+                icon: <FileTextOutlined />,
+                label: <Link to="/papers">论文管理</Link>,
               },
               {
                 key: '7',
-                icon: <BookOutlined />,
-                label: '技术博客',
-                style: getSelectedKey() === '7' ? { background: '#E3F2FD', borderRadius: '0 20px 20px 0', marginRight: '20px' } : {}
-              }
+                icon: <ReadOutlined />,
+                label: <Link to="/tech-blogs">技术博客</Link>,
+              },
             ]}
           />
         </div>
@@ -279,7 +274,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         className="transition-all duration-300"
         style={{
           marginLeft: siderCollapsed ? '60px' : '220px',
-          height: '100vh',
+          height: '130vh',
           overflow: 'hidden',
           background: '#f6f8fa',
         }}

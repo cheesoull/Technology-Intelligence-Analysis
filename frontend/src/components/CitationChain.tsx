@@ -27,7 +27,7 @@ export const CitationChain: React.FC<CitationChainProps> = ({ paperId, depth = 2
     const fetchCitationChain = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/paper/${paperId}/citation-chain?depth=${depth}`);
+        const response = await fetch(`/api/papers/${paperId}/citation-chain?depth=${depth}`);
         if (!response.ok) {
           throw new Error('获取引用链失败');
         }
