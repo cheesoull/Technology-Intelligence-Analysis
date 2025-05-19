@@ -14,7 +14,6 @@ import TechBlogs from './pages/TechBlogs';
 import History from './pages/History';
 import Report from './pages/Report';
 
-// 包装组件，用于应用MainLayout
 const AppLayout = () => {
   return (
     <Layout className="min-h-screen">
